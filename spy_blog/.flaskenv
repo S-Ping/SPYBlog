@@ -1,4 +1,2 @@
 FLASK_ENV=production
 FLASK_APP=app.py
-
-SERVER_NAME=0.0.0.0:6000
