@@ -40,6 +40,8 @@ class User(db.Model, BaseModel):
     signature = db.Column(db.String(256), comment='个性签名')
     avatar = db.Column(db.String(128), comment='头像')
     last_login = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP"), comment='最近登录时间')
+    login_addr = db.Column(db.String(64), comment='登录地址')
+    login_ip = db.Column(db.String(16), comment='登录ip')
     articles = db.relationship('Article')
     roles = db.relationship('Role', secondary=user_role, backref=db.backref('users'))
 

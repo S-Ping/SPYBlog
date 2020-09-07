@@ -11,7 +11,7 @@ import datetime
 from common import http_code, pretty_result
 from models.blog import *
 from common.decorators import permission_required
-from schemas.blog import RoleSchema
+from schemas.blog import RoleSchema, UserSchema
 
 
 class AuthResource(Resource):
@@ -33,12 +33,19 @@ class AuthResource(Resource):
         # 校验密码是否正确
         if not user.check_password(args.password):
             return pretty_result(http_code.DATA_ERROR, msg='用户名或密码错误')
+
         # 生成token
         timedelta = datetime.timedelta(days=5)
         access_token = create_access_token(identity=user, expires_delta=timedelta)
         return pretty_result(
             http_code.OK,
             data={'token': access_token, 'nickname': user.nickname, 'email': user.email, 'avatar': user.avatar})
+
+    @jwt_required
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        return pretty_result(http_code.OK, data=UserSchema().dump(user))
 
 
 class Hello(Resource):

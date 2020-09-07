@@ -67,19 +67,19 @@ def apply_request_log(app):
 
 
 # 记录用户的登录日志
-def record_login_log(uid, message=''):
-    '''
-    :param uid: 用户id
-    :param msg: 提示消息
-    :return:
-    '''
-    # user = User.get_or_404(id=uid)
-    # remote_addr, user_agent = request.remote_addr, request.user_agent
-    # location = parse_location_by_ip(ip=remote_addr)
-    #
-    # LoginLog.create(user_id=user.id, user_name=user.username,
-    #                 ip_addr=remote_addr, location=location, browser=user_agent.browser,
-    #                 os=user_agent.platform, message=message, status=True)
+# def record_login_log(uid, message=''):
+#     '''
+#     :param uid: 用户id
+#     :param msg: 提示消息
+#     :return:
+#     '''
+#     user = User.get_or_404(id=uid)
+#     remote_addr, user_agent = request.remote_addr, request.user_agent
+#     location = parse_location_by_ip(ip=remote_addr)
+#
+#     LoginLog.create(user_id=user.id, user_name=user.username,
+#                     ip_addr=remote_addr, location=location, browser=user_agent.browser,
+#                     os=user_agent.platform, message=message, status=True)
 
 
 # 基于ip解析真实地址

@@ -2,9 +2,13 @@ from . import ma
 from models.blog import User, Role, Permission, Article, ArticleBody, Category, Tag, Comment, Friend, Record
 from marshmallow_sqlalchemy import ModelSchema, fields
 
-# class UserSchema(ma.ModelSchema):
-#     class Meta:
-#         model = User
+
+class UserSchema(ModelSchema):
+    roles = fields.Nested('RoleSchema', many=True, only=['id', 'name'])
+
+    class Meta:
+        model = User
+        exclude = ['articles']
 
 
 class PermissionSchema(ModelSchema):
