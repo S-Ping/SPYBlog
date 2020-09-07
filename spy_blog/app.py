@@ -22,10 +22,10 @@ from schemas import ma
 hash_ids = Hashids(salt='hvwptlmj129d5quf', min_length=8, alphabet=string.ascii_lowercase + string.digits)
 
 
-def create_app(config_name):
+def create_app(config_name=None):
     app = Flask(__name__)
-
     # 加载配置文件
+    config_name = os.getenv('FLASK_ENV', 'development')
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -172,7 +172,9 @@ def handle_error(app):
             raise e
 
 
-if __name__ == '__main__':
-    load_dotenv(find_dotenv(), override=True)
-    app = create_app(os.getenv('FLASK_ENV', 'development'))
-    app.run(host='0.0.0.0')
+# if __name__ == '__main__':
+# #     # load_dotenv(find_dotenv(raise_error_if_not_found=True), override=True, verbose=True)
+# #     # print('load...')
+# #     # print(os.getenv('FLASK_ENV'))
+# #     app = create_app(os.getenv('FLASK_ENV', 'development'))
+#     app.run(debug=False, host='0.0.0.0')

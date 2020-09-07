@@ -7,6 +7,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'SPing')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'SPing')
     # JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+    print(JWT_SECRET_KEY)
+    SERVER_NAME = os.getenv('SERVER_NAME')
+    print(SERVER_NAME)
 
     # SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -40,10 +43,10 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    MYSQL_USERNAME = os.getenv('DEV_MYSQL_USERNAME')
-    MYSQL_PASSWORD = os.getenv('DEV_MYSQL_PASSWORD')
-    MYSQL_DB = os.getenv('DEV_MYSQL_DB')
-    MYSQL_HOST = os.getenv('DEV_MYSQL_HOST')
+    MYSQL_USERNAME = os.getenv('DEV_MYSQL_USERNAME', 'sping')
+    MYSQL_PASSWORD = os.getenv('DEV_MYSQL_PASSWORD', '1119SloveS')
+    MYSQL_DB = os.getenv('DEV_MYSQL_DB', 'test')
+    MYSQL_HOST = os.getenv('DEV_MYSQL_HOST', 'rm-2ze2aelwrm6a2fj55zo.mysql.rds.aliyuncs.com:3306')
     MYSQL_CHARSET = 'utf8mb4'  # 为了支持 emoji 显示，需要设置为 utf8mb4 编码
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{MYSQL_USERNAME}:{MYSQL_PASSWORD}' \
                               f'@{MYSQL_HOST}/{MYSQL_DB}?charset={MYSQL_CHARSET}'
