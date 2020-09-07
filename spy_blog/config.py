@@ -7,13 +7,10 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'SPing')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'SPing')
     # JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
-    SERVER_NAME = '0.0.0.0:6000'
 
     # SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # SQLALCHEMY_RECORD_QUERIES = True
-
-    HOST = '0.0.0.0'
 
     # 分页
     PER_PAGE = 10
