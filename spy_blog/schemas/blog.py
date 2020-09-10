@@ -8,7 +8,7 @@ class UserSchema(ModelSchema):
 
     class Meta:
         model = User
-        exclude = ['articles']
+        exclude = ['articles', 'pwd']
 
 
 class PermissionSchema(ModelSchema):
