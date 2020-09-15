@@ -38,7 +38,7 @@ class User(db.Model, BaseModel):
     nickname = db.Column(db.String(32), comment='名称')
     pwd = db.Column(db.String(128), comment='密码')
     signature = db.Column(db.String(256), comment='个性签名')
-    avatar = db.Column(db.String(128), comment='头像')
+    avatar = db.Column(db.String(512), comment='头像', server_default='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1600075730122&di=0eb8a83461d4b002d7465e7b67449f38&imgtype=0&src=http%3A%2F%2Fhbimg.b0.upaiyun.com%2Fff4b009e29dc720559674d42595bdd306a494c9ee550-EqxCpY_fw236')
     last_login = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP"), comment='最近登录时间')
     login_addr = db.Column(db.String(64), comment='登录地址')
     login_ip = db.Column(db.String(16), comment='登录ip')

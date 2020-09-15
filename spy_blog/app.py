@@ -3,9 +3,10 @@ __author__ = 'SPing'
 import os
 import string
 
-from flask import Flask, request
+from flask import Flask, request, abort
 from flask_jwt_extended import JWTManager
 from flask_marshmallow import Marshmallow
+import flask_restful
 from hashids import Hashids
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -18,12 +19,13 @@ from common import pretty_result, http_code
 from libs.flask_logger import register_logger
 from libs.redis_cli import redis_store
 from schemas import ma
+from libs.mail import mail
 
 hash_ids = Hashids(salt='hvwptlmj129d5quf', min_length=8, alphabet=string.ascii_lowercase + string.digits)
 
 
 def create_app(config_name=None):
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='templates', static_folder='static')
     # 加载配置文件
     config_name = os.getenv('FLASK_ENV', 'development')
     app.config.from_object(config[config_name])
@@ -41,7 +43,9 @@ def create_app(config_name=None):
 def register_blueprint(app):
     '''注册蓝图'''
     from routes import api_v1
-    app.register_blueprint(api_v1, url_prefix='/api/v1')
+    from resources.blue_print import blue
+    app.register_blueprint(api_v1, url_prefix='/spy/api/v1')
+    app.register_blueprint(blue, url_prefix='/spy')
 
 
 def register_plugin(app):
@@ -53,6 +57,8 @@ def register_plugin(app):
     register_jwt(app)  # 初始化jwt
     register_limiter(app)  # 初始化频率限制
     ma.init_app(app)  # 初始化序列化插件
+    mail.init_app(app)  # 初始化邮件插件
+
 
     if app.config['DEBUG']:
         apply_request_log(app)  # 打印请求日志
@@ -61,6 +67,13 @@ def register_plugin(app):
 # def apply_json_encoder(app):
 #     from libs.json_encoder import JSONEncoder
 #     app.json_encoder = JSONEncoder
+
+def custom_abord(http_status_code, *args, **kwargs):
+    # 只要http_status_code 为400， 报参数错误
+    if http_status_code == 400:
+        abort(pretty_result(code=http_code.PARAM_ERROR))
+    # 正常返回消息
+    return abort(http_status_code)
 
 
 def register_jwt(app):
@@ -164,14 +177,21 @@ def handle_error(app):
     def param_error(e):
         return pretty_result(http_code.PARAM_ERROR)
 
+    @app.errorhandler(404)
+    def param_error(e):
+        return pretty_result(http_code.NOTFOUND_ERROR)
+
     @app.errorhandler(Exception)
     def framework_error(e):
+        print(e)
         if not app.config['DEBUG']:
             return pretty_result(http_code.UNKNOWN_ERROR)  # 未知错误(统一为服务端异常)
         else:
             raise e
 
 
+# 自定义异常处理
+flask_restful.abort = custom_abord
 # if __name__ == '__main__':
 # #     # load_dotenv(find_dotenv(raise_error_if_not_found=True), override=True, verbose=True)
 # #     # print('load...')

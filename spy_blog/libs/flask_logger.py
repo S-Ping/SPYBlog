@@ -8,15 +8,16 @@ from logging.handlers import RotatingFileHandler
 
 from flask import g, Response, request, _request_ctx_stack
 from models.blog import User
+from config import basedir
 
 
 
 def register_logger(name):
-    APP_LOG_FP = 'logs/app.log'
     logger = logging.getLogger(name)
-    dir_name, _ = os.path.split(APP_LOG_FP)
+    dir_name = os.path.join(basedir, 'logs')
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
+    APP_LOG_FP = os.path.join(dir_name, 'app.log')
     logger.setLevel(logging.INFO)
     # 指定logger输出格式
     formatter = logging.Formatter('%(asctime)s - %(levelname)-2s[%(name)s]: %(message)s')
@@ -25,12 +26,12 @@ def register_logger(name):
     file_handler.setFormatter(formatter)  # 可以通过setFormatter指定输出格式
     file_handler.setLevel(logging.INFO)
 
-    logger.addHandler(file_handler)
+    # logger.addHandler(file_handler)
     # 控制台日志
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.formatter = formatter  # 也可以直接给formatter赋值
     # 为logger添加的日志处理器，可以自定义日志处理器让其输出到其他地方
-    # logger.addHandler(file_handler)
+    logger.addHandler(file_handler)
     logger.addHandler(console_handler)
     # 指定日志的最低输出级别，默认为WARN级别
     # logger.setLevel(logging.DEBUG)
