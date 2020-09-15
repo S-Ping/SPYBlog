@@ -11,4 +11,4 @@ app = create_app(os.getenv('FLASK_ENV', 'development'))
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8889, use_reloader=False)
-    app.run(host='0.0.0.0', port=6000)
+    app.run(host='0.0.0.0', port=19531)
