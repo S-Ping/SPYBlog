@@ -1,5 +1,7 @@
-from . import db
 from sqlalchemy import text, Integer, BOOLEAN, TIMESTAMP
+
+from . import db
+
 
 
 class BaseModel(object):
@@ -17,6 +19,9 @@ class BaseModel(object):
 
     def commit_to_db(self):
         db.session.commit()
+
+    def rollback_db(self):
+        db.session.rollback()
 
     def delete_from_db(self):
         db.session.delete(self)

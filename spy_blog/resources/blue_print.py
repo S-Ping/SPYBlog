@@ -1,11 +1,13 @@
 import os
+from urllib.parse import urlparse, parse_qsl
 
 import qrcode
 from flask.blueprints import Blueprint
 from io import BytesIO
-from flask import send_file, make_response
+from flask import send_file, make_response, Response, current_app, request, abort
 
 from config import static_dir
+from models.blog import Website
 
 
 blue = Blueprint('blue', __name__)
@@ -36,3 +38,36 @@ def images(img_name):
         res.headers['Content-Type'] = 'image/png'
         return res
 
+
+# 记录页面访问的插件
+@blue.route('/a_js')
+def analyze_script():
+    return Response(
+        current_app.config['JAVASCRIPT'] % (current_app.config['DOMAIN']),
+        mimetype='text/javascript'
+    )
+
+
+@blue.route('/a_gif')
+def analyze():
+    if not request.args.get('url'):
+        abort(404)
+
+    site = Website()
+
+    parsed = urlparse(request.args['url'])
+    params = dict(parse_qsl(parsed.query))
+
+    site.domain = parsed.netloc,
+    site.url = parsed.path,
+    site.title = request.args.get('t') or '',
+    site.ip = request.headers.get('X-Forwarded-For', request.remote_addr),
+    site.referrer = request.args.get('ref') or '',
+    site.headers = dict(request.headers),
+    site.user_agent = request.user_agent.browser,
+    site.params = params
+    site.save_to_db()
+
+    response = Response(current_app.config['BEACON'], mimetype='image/gif')
+    response.headers['Cache-Control'] = 'private, no-cache'
+    return response

@@ -5,16 +5,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # 用戶角色多对多关系表
 user_role = db.Table('user_role', db.Model.metadata,
-                      db.Column('uid', db.Integer, db.ForeignKey('user.id')),
-                      db.Column('rid', db.Integer, db.ForeignKey('role.id')),
+                      db.Column('uid', db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')),
+                      db.Column('rid', db.Integer, db.ForeignKey('role.id', ondelete='CASCADE')),
                       db.PrimaryKeyConstraint('uid', 'rid')
                       )
 
 
 # 角色和权限多对多关系表
 role_permission = db.Table('role_permission', db.Model.metadata,
-                             db.Column('rid', db.Integer, db.ForeignKey('role.id')),
-                             db.Column('pid', db.Integer, db.ForeignKey('permission.id')),
+                             db.Column('rid', db.Integer, db.ForeignKey('role.id', ondelete='CASCADE')),
+                             db.Column('pid', db.Integer, db.ForeignKey('permission.id', ondelete='CASCADE')),
                              db.PrimaryKeyConstraint('rid', 'pid')
                              )
 
@@ -39,7 +39,8 @@ class User(db.Model, BaseModel):
     pwd = db.Column(db.String(128), comment='密码')
     signature = db.Column(db.String(256), comment='个性签名')
     avatar = db.Column(db.String(512), comment='头像', server_default='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1600075730122&di=0eb8a83461d4b002d7465e7b67449f38&imgtype=0&src=http%3A%2F%2Fhbimg.b0.upaiyun.com%2Fff4b009e29dc720559674d42595bdd306a494c9ee550-EqxCpY_fw236')
-    last_login = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP"), comment='最近登录时间')
+    lock = db.Column(db.BOOLEAN, server_default=db.text('False'), comment='用户锁定')
+    last_login = db.Column(db.TIMESTAMP, comment='最近登录时间')
     login_addr = db.Column(db.String(64), comment='登录地址')
     login_ip = db.Column(db.String(16), comment='登录ip')
     articles = db.relationship('Article')
@@ -74,6 +75,7 @@ class Permission(db.Model, BaseModel):
     path = db.Column(db.String(32), comment='路由')
     icon = db.Column(db.String(32), server_default='el-icon-s-home', comment='菜单图标')
     order = db.Column(db.Integer, comment='展示顺序')
+    level = db.Column(db.Integer, comment='权限等级')
     method = db.Column(db.String(6), server_default='get', comment='请求方法')
     parent_id = db.Column(db.Integer, db.ForeignKey('permission.id'), comment='父级权限id')
     parent = db.relationship('Permission', back_populates='child', remote_side=[id])
@@ -218,3 +220,24 @@ class Friend(db.Model, BaseModel):
 
     def __repr__(self):
         return '<Friend %r>' % self.friend_name
+
+
+class Website(db.Model):
+    """
+    网站访问记录表
+    """
+    __tablename__ = 'site'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='主键')
+    domain = db.Column(db.String(255))
+    url = db.Column(db.String(255))
+    title = db.Column(db.String(255), default='')
+    ip = db.Column(db.String(255), default='')
+    referrer = db.Column(db.String(255), default='')
+    user_agent = db.Column(db.String(255), default='')
+    headers = db.Column(db.JSON)
+    params = db.Column(db.JSON)
+    create_time = db.Column(db.TIMESTAMP, server_default=db.text("CURRENT_TIMESTAMP"), comment='创建时间')
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()

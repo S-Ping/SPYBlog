@@ -44,11 +44,7 @@ class MailSender:
         """
         try:
             # 发送渲染一个模板
-            img_stream = ''
-            with open(os.path.join(static_dir, 'images/logo.png'), 'r', encoding='UTF-8') as f:
-                img_stream = f.read()
-                img_stream = base64.b64encode(img_stream)
-            self.message.html = render_template(template_name, pwd=pwd, img_stream=img_stream)
+            self.message.html = render_template(template_name, pwd=pwd)
             self.send()
         except Exception as e:
             current_app.logger.error('邮件发送失败')

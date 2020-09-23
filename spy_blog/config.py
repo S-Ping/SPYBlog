@@ -1,4 +1,5 @@
 import os
+from base64 import b64decode
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 static_dir = os.path.join(basedir, 'static')
@@ -30,6 +31,15 @@ class Config:
     # redis 配置
     # REDIS_URL = "redis://:password@localhost:6379/0"
     REDIS_URL = "redis://localhost:6379/6"
+
+    JAVASCRIPT = """(function(){
+    var d=document,i=new Image,e=encodeURIComponent;
+    i.src='%s/a_gif?url='+e(d.location.href)+'&ref='+e(d.referrer)+'&t='+e(d.title);
+    })()""".replace('\n', '')
+
+    DOMAIN = 'http://sping.site/spy'
+
+    BEACON = b64decode('R0lGODlhAQABAIAAANvf7wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
 
     def __init__(self):
         pass

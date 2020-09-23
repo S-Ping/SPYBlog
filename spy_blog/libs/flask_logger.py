@@ -4,6 +4,7 @@ import time
 import sys
 import logging
 import os
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from flask import g, Response, request, _request_ctx_stack
@@ -43,47 +44,45 @@ OBJECTS = ['user', 'response', 'request']
 
 
 # 记录每次请求的性能
-def apply_request_log(app):
-    @app.before_request
-    def request_cost_time():
-        g.request_start_time = time.time()
-        g.request_time = lambda: "%.5f" % (time.time() - g.request_start_time)
+# def apply_request_log(app):
+#     @app.before_request
+#     def request_cost_time():
+#         g.request_start_time = time.time()
+#         g.request_time = lambda: "%.5f" % (time.time() - g.request_start_time)
+#
+#     @app.after_request
+#     def log_response(res):
+#         message = '[%s] -> [%s] from:%s costs:%.3f ms' % (
+#             request.method,
+#             request.path,
+#             request.remote_addr,
+#             float(g.request_time()) * 1000
+#         )
+#         req_body = request.get_json() if request.get_json() else {}
+#         data = {
+#             'path': request.path,
+#             'query': request.args,
+#             'body': req_body
+#         }
+#         message += '\n\"data\": ' + json.dumps(data, indent=4, ensure_ascii=False)
+#         if request.method in ('GET', 'POST', 'PUT', 'DELETE'):
+#             print(message)
+#         return res
 
-    @app.after_request
-    def log_response(res):
-        message = '[%s] -> [%s] from:%s costs:%.3f ms' % (
-            request.method,
-            request.path,
-            request.remote_addr,
-            float(g.request_time()) * 1000
-        )
-        req_body = request.get_json() if request.get_json() else {}
-        data = {
-            'path': request.path,
-            'query': request.args,
-            'body': req_body
-        }
-        message += '\n\"data\": ' + json.dumps(data, indent=4, ensure_ascii=False)
-        if request.method in ('GET', 'POST', 'PUT', 'DELETE'):
-            print(message)
-        return res
 
-
-# # 记录用户的登录日志
-# def record_login_log(uid: str):
-#     '''
-#     :param uid: 用户id
-#     :return:
-#     '''
-#     remote_addr, user_agent = request.remote_addr, request.user_agent
-#     location = parse_location_by_ip(ip=remote_addr)
-#     user = User.query.get(uid)
-#     if user:
-#         user.update({
-#             'login_ip': remote_addr,
-#             'login_addr': location
-#         })
-#         user.commit_to_db()
+# 记录用户的登录日志
+def record_login_log(user):
+    '''
+    :param uid: 用户id
+    :return:
+    '''
+    remote_addr = request.remote_addr
+    location = parse_location_by_ip(ip=remote_addr)
+    if user:
+        user.login_ip = remote_addr
+        user.login_addr = location
+        user.last_login = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user.commit_to_db()
 
 
 import geoip2.database
@@ -141,25 +140,33 @@ import geoip2.database
 #
 #
 #
-# # 基于ip解析真实地址
-# def parse_location_by_ip(ip: str):
-#     '''
-#     :param ip: ip地址
-#     :return: ip所在的省市
-#     '''
-#     if ip == '127.0.0.1' or ip.startswith('192.168.'):
-#         return "本地"
-#     from common.http_util import HTTP
-#     try:
-#         url = 'http://whois.pconline.com.cn/ipJson.jsp?{0}&json=true'.format(ip)
-#         json_data = HTTP.get(url)
-#         return '{0} {1}'.format(json_data['pro'], json_data['city'])
-#     except Exception:
-#         return '获取地理位置异常 {ip}'.format(ip=ip)
+# 基于ip解析真实地址
+def parse_location_by_ip(ip: str):
+    '''
+    :param ip: ip地址
+    :return: ip所在的省市
+    '''
+    if ip == '127.0.0.1' or ip.startswith('192.168.'):
+        return "local"
+    from common.http_util import HTTP
+    try:
+        url = 'http://ip-api.com/json/{}'.format(ip)
+        json_data = HTTP.get(url)
+        addr = []
+        if json_data.get('country'):
+            addr.append(json_data['country'])
+        if json_data.get('regionName'):
+            addr.append(json_data['regionName'])
+        if json_data.get('city'):
+            addr.append(json_data['city'])
+
+        return ', '.join(addr)
+    except Exception as e:
+        return None
 #
 #
-# if __name__ == '__main__':
-#     print(parse_location_by_ip('192.168.0.1'))
+if __name__ == '__main__':
+    print(parse_location_by_ip('110.84.0.129'))
 #     import socket
 #     hostname = socket.gethostname()
 #     host = socket.gethostbyname(hostname)

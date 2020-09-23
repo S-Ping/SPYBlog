@@ -12,6 +12,7 @@ from common import http_code, pretty_result
 from models.blog import *
 from common.decorators import permission_required
 from schemas.blog import RoleSchema, UserSchema
+from libs.flask_logger import record_login_log
 
 
 class AuthResource(Resource):
@@ -37,6 +38,7 @@ class AuthResource(Resource):
         # 生成token
         timedelta = datetime.timedelta(days=5)
         access_token = create_access_token(identity=user, expires_delta=timedelta)
+        record_login_log(user)
         return pretty_result(
             http_code.OK,
             data={'token': access_token, 'nickname': user.nickname, 'email': user.email, 'avatar': user.avatar})

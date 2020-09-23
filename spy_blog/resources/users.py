@@ -13,6 +13,7 @@ from models.blog import User, Role
 from common.decorators import permission_required
 from schemas.blog import UserSchema
 from libs.mail import check_email, MailSender
+
 from libs.random_str import RandomStr
 
 
@@ -73,23 +74,37 @@ class UserResource(Resource):
         添加用户
         '''
         self.parser.add_argument("email", type=str, location="json", required=True, help='邮箱', trim=True)
+        self.parser.add_argument("nickname", type=str, location="json", required=True, help='昵称', trim=True)
         self.parser.add_argument("roles", type=list, location="json", required=True, help='角色')
         self.args = self.parser.parse_args()
         email = self.args.email
         if not check_email(email):
             return pretty_result(http_code.PARAM_ERROR, '邮箱格式不正确')
+        if not self.args.roles:
+            return pretty_result(http_code.PARAM_ERROR, '角色不能为空')
+        roles = Role.query.filter(Role.id.in_(self.args.roles)).all()
+        if not roles:
+            return pretty_result(http_code.PARAM_ERROR, '角色不存在')
         pwd = RandomStr().password()
         user = User()
         user.password = pwd
         user.email = email
-        if not self.args.roles:
-            return pretty_result(http_code.PARAM_ERROR, '角色不能为空')
-        user.roles = Role.query.filter(Role.id.in_(self.args.roles)).all()
+        user.roles = roles
+        user.nickname = self.args.nickname
         try:
-            # user.save_to_db()
-            pass
+            user.save_to_db()
         except Exception as e:
+            user.rollback_db()
             return pretty_result(http_code.DB_ERROR)
-        mail = MailSender('开通账户', email)
-        mail.html_email('email.html', pwd)
+        else:
+            mail = MailSender('开通账户', email)
+            mail.html_email('email.html', pwd)
         return pretty_result(http_code.OK)
+
+    def put(self, uid=None):
+        self.parser.add_argument("roles", type=list, location="json", help='角色')
+        if uid:
+            pass
+        else:
+            uid = get_jwt_identity()
+            self.parser.add_argument("nickname", type=str, location="json", help='昵称', trim=True)

@@ -13,7 +13,6 @@ from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv, find_dotenv
 
 from models import db
-from libs.flask_logger import apply_request_log
 from config import config
 from common import pretty_result, http_code
 from libs.flask_logger import register_logger
@@ -60,8 +59,8 @@ def register_plugin(app):
     mail.init_app(app)  # 初始化邮件插件
 
 
-    if app.config['DEBUG']:
-        apply_request_log(app)  # 打印请求日志
+    # if app.config['DEBUG']:
+    #     apply_request_log(app)  # 打印请求日志
 
 
 # def apply_json_encoder(app):
