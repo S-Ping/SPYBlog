@@ -135,7 +135,7 @@ class Article(db.Model, BaseModel):
     tags = db.relationship('Tag', secondary=posts_tags_table, backref=db.backref('articles', lazy='dynamic'),
                            lazy="dynamic")
 
-    authors = db.relationship('User', back_populates='articles')
+    author = db.relationship('User', back_populates='articles')
     category = db.relationship('Category', back_populates='articles')
     comments = db.relationship('Comment', back_populates='articles', cascade='all, delete-orphan')
 
