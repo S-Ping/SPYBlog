@@ -29,7 +29,7 @@ class RoleSchema(ModelSchema):
 
 
 class ArticleSchema(ModelSchema):
-    authors =  fields.Nested('UserSchema', many=True, only=['id', 'name'])
+    authors = fields.Nested('UserSchema', many=True, only=['id', 'nickname'])
     class Meta:
         model = Article
         fields = ['id', 'title', 'desc', 'weight', 'view_counts', 'publish', 'create_time', 'authors']
