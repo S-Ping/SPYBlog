@@ -9,9 +9,10 @@ from flask_jwt_extended import (
 )
 
 from common import http_code, pretty_result
-from models.blog import User, Role
+from models.blog import User, Role, Permission
 from common.decorators import permission_required
-from schemas.blog import RoleSchema
+from schemas.blog import RoleSchema, PermissionSchema
+from libs.tree import Tree
 
 
 class RoleResource(Resource):
@@ -37,6 +38,8 @@ class RoleResource(Resource):
             return pretty_result(http_code.DB_ERROR)
         if roles:
             roles = RoleSchema().dump(roles.all(), many=True)
+            for role in roles:
+                role['permissions'] = Tree(role['permissions'], 'id', 'parent').generate()
         return pretty_result(http_code.OK, data={'items': roles, 'total': total})
 
     def get_roles(self):
@@ -46,3 +49,23 @@ class RoleResource(Resource):
         order = text(f'-role.{order_by[1:]}') \
             if order_by.startswith('-') else text(f'role.{order_by}')
         return query_obj.order_by(order).offset(self.args.offset).limit(self.args.size), total
+
+
+class PermissionResource(Resource):
+    """
+    权限管理
+    """
+    def __init__(self):
+        self.parser = RequestParser()
+
+    def get(self):
+        """
+        获取全部权限
+        """
+        self.parser.add_argument("mode", type=str, location="args", default='list', help='数据结构（列表/树状）')
+        self.args = self.parser.parse_args()
+        permissions = Permission.query.filter(Permission.is_delete!=True).all()
+        permissions = PermissionSchema().dump(permissions, many=True)
+        if self.args.mode == 'tree':
+            permissions = Tree(permissions, 'id', 'parent').generate()
+        return pretty_result(http_code.OK, data=permissions)

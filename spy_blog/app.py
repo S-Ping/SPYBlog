@@ -71,6 +71,8 @@ def custom_abord(http_status_code, *args, **kwargs):
     # 只要http_status_code 为400， 报参数错误
     if http_status_code == 400:
         abort(pretty_result(code=http_code.PARAM_ERROR))
+    elif http_status_code == 429:
+        abort(pretty_result(code=http_code.RATELIMIT_ERROR))
     # 正常返回消息
     return abort(http_status_code)
 
@@ -130,7 +132,7 @@ def register_limiter(app):
     '''
     limiter = Limiter(
         app,
-        default_limits=['100/day'],
+        default_limits=['100/second'],
         key_func=get_remote_address
     )
     limiter.request_filter(filter_func)

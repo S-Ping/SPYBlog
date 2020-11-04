@@ -21,7 +21,7 @@ class PermissionSchema(ModelSchema):
 
 
 class RoleSchema(ModelSchema):
-    permissions = fields.Nested('PermissionSchema', many=True, only=['id', 'path', 'method', 'parent'])
+    permissions = fields.Nested('PermissionSchema', many=True, only=['id', 'path', 'method', 'parent', 'auth_name'])
 
     class Meta:
         model = Role
