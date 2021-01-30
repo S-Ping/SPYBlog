@@ -12,7 +12,7 @@ from flask_jwt_extended import (
 from common import http_code, pretty_result
 from models.blog import Article, ArticleBody, Tag
 from common.decorators import permission_required
-from schemas.blog import ArticleSchema
+from schemas.blog import ArticleSchema, TagSchema
 
 
 class ArticleResource(Resource):
@@ -77,3 +77,32 @@ class ArticleResource(Resource):
                 or_(Article.title.like(f'%{q}%'), Article.desc.like(f'%{q}%'))
             )
         return query_obj
+
+    def post(self):
+        pass
+
+
+class TagResource(Resource):
+    """
+    标签管理
+    """
+    def __init__(self):
+        self.parser = RequestParser()
+
+    @jwt_required
+    def get(self):
+        self.parser.add_argument("offset", type=int, location="args", default=0, help='页码')
+        self.parser.add_argument("size", type=int, location="args", default=10, help='每页数量')
+        self.args = self.parser.parse_args()
+        try:
+            tags, total = self.get_tags()
+        except Exception as e:
+            return pretty_result(http_code.DB_ERROR)
+        tags = TagSchema().dump(tags.all(), many=True)
+        return pretty_result(http_code.OK, data={'items': tags, 'total': total})
+
+    def get_tags(self):
+        query_obj = Tag.query
+        total = query_obj.count()
+        return query_obj.order_by(text('-tag.create_time')).offset(self.args.offset).limit(self.args.size), total
+

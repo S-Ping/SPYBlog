@@ -35,3 +35,8 @@ class ArticleSchema(ModelSchema):
         fields = ['id', 'title', 'desc', 'weight', 'view_counts', 'publish', 'create_time', 'author']
 
 
+class TagSchema(ModelSchema):
+    class Meta:
+        model = Tag
+
+
